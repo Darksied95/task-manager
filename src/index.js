@@ -10,6 +10,8 @@ app.use(express.json())
 app.use('/tasks', taskRouter)
 app.use('/users', userRouter)
 
+const bcrypt = require('bcryptjs')
+
 
 
 

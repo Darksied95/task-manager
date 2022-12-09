@@ -62,14 +62,15 @@ router.patch('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
     try {
         const task = await Task.findById(req.params.id)
-
         updates.forEach(update => task[update] = req.body[update])
-
         await task.save()
+
         if (!task) {
             return res.send(404).send('User not found')
         }
+
         res.send(task)
+
     } catch (err) {
         return res.send(err)
     }

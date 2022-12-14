@@ -50,6 +50,8 @@ const userSchema = new mongoose.Schema({
     }]
 })
 
+
+//schmma function that runs before saving a user to the database
 userSchema.pre('save', async function (next) {
 
     if (this.isModified('password')) {
@@ -59,15 +61,23 @@ userSchema.pre('save', async function (next) {
     next()
 })
 
-
+//Function for the user instance created from User
 userSchema.methods.generateAuthToken = async function () {
     const token = jwt.sign({ _id: this._id.toString() }, 'Helloworld')
-
     this.tokens = this.tokens.concat({ token })
     await this.save()
     return token
 }
 
+userSchema.methods.toJSON = function () {
+    const userObject = this.toObject()
+    delete userObject.password
+    delete userObject.tokens
+    return userObject
+}
+
+
+//Function for the User class
 userSchema.statics.findByCredentials = async function (email, password) {
     const user = await User.findOne({ email })
     if (!user) {

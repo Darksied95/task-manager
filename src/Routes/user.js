@@ -9,21 +9,6 @@ router.get('/me', auth, async (req, res) => {
     res.send(req.user)
 })
 
-router.get('/:id', async (req, res) => {
-    const _id = req.params.id
-
-    try {
-        const user = await User.findById(_id)
-
-        if (!user) {
-            return res.status(404).send()
-        }
-
-        res.send(user)
-    } catch (e) {
-        res.status(500).send()
-    }
-})
 
 router.post('/', async (req, res) => {
     const user = new User(req.body)
@@ -36,6 +21,7 @@ router.post('/', async (req, res) => {
         res.status(400).send(e)
     }
 })
+
 router.post('/login', async (req, res) => {
 
     try {
@@ -91,13 +77,12 @@ router.patch('/:id', async (req, res) => {
     }
 })
 
-router.delete('/:id', async (req, res) => {
+router.delete('/me', auth, async (req, res) => {
     try {
-        const user = await User.findByIdAndDelete(req.params.id)
-        if (!user) {
-            return res.send(404).send('User not found')
-        }
-        res.send(user)
+
+        //mongoose give us remove method 
+        await req.user.remove()
+        res.send(req.user)
     } catch (err) {
         return res.send(err)
     }

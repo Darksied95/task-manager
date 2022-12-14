@@ -9,7 +9,6 @@ async function auth(req, res, next) {
         const decoded = jwt.decode(token, 'Helloworld')
         const user = await User.findOne({ _id: decoded._id, 'tokens.token': token })
         if (!user) {
-            console.log('Something went wrong');
             throw new Error()
         }
         req.user = user

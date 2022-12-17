@@ -1,9 +1,14 @@
 const express = require('express')
+const auth = require('../middleware/auth')
 const Task = require('../Models/task')
 
 const router = express.Router()
-router.post('/', async (req, res) => {
-    const task = new Task(req.body)
+router.post('/', auth, async (req, res) => {
+
+    const task = new Task({
+        ...req.body,
+        owner: req.user._id
+    })
 
     try {
         await task.save()
@@ -13,20 +18,20 @@ router.post('/', async (req, res) => {
     }
 })
 
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
     try {
-        const tasks = await Task.find({})
+        const tasks = await Task.find({ owner: req.user._id })
         res.send(tasks)
     } catch (e) {
         res.status(500).send()
     }
 })
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', auth, async (req, res) => {
     const _id = req.params.id
 
     try {
-        const task = await Task.findById(_id)
+        const task = await Task.findOne({ _id, owner: req.user._id })
 
         if (!task) {
             return res.status(404).send()
@@ -48,11 +53,12 @@ router.patch('/:id', async (req, res) => {
         return res.status(400).send({ error: 'Invalid update' })
     }
     try {
-        const task = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
+        const task = await Task.findOne({ _id: req.params._id, owner: req.user._id })
         if (!task) {
             return res.status(404).send('User not found')
         }
-
+        updates.forEach(update => task[update] = req.body[update])
+        await task.save()
         res.send(task)
     } catch (e) {
         return res.status(400).send(e)

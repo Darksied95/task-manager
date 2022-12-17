@@ -1,5 +1,6 @@
 const express = require('express')
 const auth = require('../middleware/auth')
+const { deleteOne } = require('../Models/task')
 const Task = require('../Models/task')
 
 const router = express.Router()
@@ -43,7 +44,7 @@ router.get('/:id', auth, async (req, res) => {
     }
 })
 
-router.patch('/:id', async (req, res) => {
+router.patch('/:id', auth, async (req, res) => {
     const updates = Object.keys(req.body)
     const allowedUpdates = ['description', 'completed']
     const isUpdatesValid = updates.every(update => allowedUpdates.includes(update))
@@ -53,7 +54,7 @@ router.patch('/:id', async (req, res) => {
         return res.status(400).send({ error: 'Invalid update' })
     }
     try {
-        const task = await Task.findOne({ _id: req.params._id, owner: req.user._id })
+        const task = await Task.findOne({ _id: req.params.id, owner: req.user._id })
         if (!task) {
             return res.status(404).send('User not found')
         }
@@ -65,11 +66,9 @@ router.patch('/:id', async (req, res) => {
     }
 })
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
     try {
-        const task = await Task.findById(req.params.id)
-        updates.forEach(update => task[update] = req.body[update])
-        await task.save()
+        const task = await Task.findOneAndDelete({ id: req.params.id, owner: req.user._id })
 
         if (!task) {
             return res.send(404).send('User not found')

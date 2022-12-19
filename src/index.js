@@ -17,7 +17,6 @@ app.use('/users', userRouter)
 
 
 
-
 app.listen(port, () => {
     console.log('Server is up on port ' + port)
 })

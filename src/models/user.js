@@ -49,8 +49,14 @@ const userSchema = new mongoose.Schema({
             required: true
         }
     }]
-})
+}, { timestamps: true })
 
+//Used for relationships that shouldn't be stored in a database
+userSchema.virtual('tasks', {
+    ref: 'Task',
+    localField: "_id",
+    foreignField: "owner"
+})
 
 //schmma function that runs before saving a user to the database
 userSchema.pre('save', async function (next) {
@@ -63,7 +69,7 @@ userSchema.pre('save', async function (next) {
 })
 
 //Delete all tasks related to a user that is being deleted
-userSchema.pre('remove', async (next) => {
+userSchema.pre('remove', async function (next) {
     await Task.deleteMany({ owner: this._id })
     next()
 })

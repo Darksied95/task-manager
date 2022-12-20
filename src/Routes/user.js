@@ -5,7 +5,6 @@ const User = require('../Models/user')
 
 const router = express.Router()
 const upload = multer({
-    dest: 'Image',
     limits: {
         fileSize: 1_000_000,
     },
@@ -22,11 +21,6 @@ const upload = multer({
 
 router.get('/me', auth, async (req, res) => {
     res.send(req.user)
-})
-
-router.post('/me/avatar', upload.single('upload'), (req, res) => {
-
-    res.send('Uploaded successfully')
 })
 
 router.post('/', async (req, res) => {
@@ -98,6 +92,22 @@ router.delete('/me', auth, async (req, res) => {
     } catch (err) {
         return res.send(err)
     }
+})
+
+//Fourth parameter is used in cases where a middleware throws ann error 
+router.post('/me/avatar', auth, upload.single('upload'), async (req, res) => {
+    req.user.avatar = req.file.buffer
+    await req.user.save()
+    res.send('Uploaded successfully')
+}, (err, req, res, next) => {
+    res.status(400).send({ error: err.message })
+})
+
+router.delete('/me/avatar', auth, async (req, res) => {
+    req.user.avatar = undefined
+    console.log(req.user);
+    await req.user.save()
+    res.send(req.user)
 })
 
 module.exports = router

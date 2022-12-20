@@ -1,6 +1,5 @@
 const express = require('express')
 const auth = require('../middleware/auth')
-const { deleteOne } = require('../Models/task')
 const Task = require('../Models/task')
 
 const router = express.Router()
@@ -22,12 +21,26 @@ router.post('/', auth, async (req, res) => {
 router.get('/', auth, async (req, res) => {
     try {
         const match = {}
+        const sort = {}
 
         if (req.query.completed) {
             match.completed = req.query.completed === 'true'
         }
 
-        await req.user.populate({ path: 'tasks', match })
+        if (req.query.sortBy) {
+            const each = req.query.sortBy.split(':')
+
+            sort[each[0]] = each[1] === 'desc' ? -1 : 1
+        }
+        await req.user.populate({
+            path: 'tasks',
+            match,
+            options: {
+                limit: parseInt(req.query.limit),
+                skip: +req.query.skip,
+                sort
+            }
+        })
         res.send(req.user.tasks)
     } catch (e) {
         res.status(500).send()

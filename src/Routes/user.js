@@ -1,5 +1,6 @@
 const express = require('express')
 const multer = require('multer')
+const sharp = require('sharp')
 const auth = require('../middleware/auth')
 const User = require('../Models/user')
 
@@ -96,7 +97,8 @@ router.delete('/me', auth, async (req, res) => {
 
 //Fourth parameter is used in cases where a middleware throws ann error 
 router.post('/me/avatar', auth, upload.single('upload'), async (req, res) => {
-    req.user.avatar = req.file.buffer
+    const buffer = await sharp(req.file.buffer).resize(250, 250).png().toBuffer()
+    req.user.avatar = buffer
     await req.user.save()
     res.send('Uploaded successfully')
 }, (err, req, res, next) => {
@@ -105,9 +107,20 @@ router.post('/me/avatar', auth, upload.single('upload'), async (req, res) => {
 
 router.delete('/me/avatar', auth, async (req, res) => {
     req.user.avatar = undefined
-    console.log(req.user);
     await req.user.save()
     res.send(req.user)
+})
+
+router.get('/:id/avatar', async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id)
+        if (!user || !user.avatar)
+            return res.status(400).send('Not found')
+        res.set('Content-Type', 'image/png')
+        res.send(user.avatar)
+    } catch (ex) {
+        res.status(500).send('Server Error')
+    }
 })
 
 module.exports = router

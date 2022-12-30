@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-mongoose.connect('mongodb://localhost:27017/task-manager-api').then(() => {
+mongoose.connect(process.env.MongodbUrl).then(() => {
     console.log('Connected to mongodb...');
 })
 

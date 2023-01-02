@@ -1,9 +1,9 @@
 const { calcTip, fahrenheitToCelsius, celsiusToFahrenheit } = require('../src/math')
 
-// test('should calculate tip', () => {
-//     const total = calcTip(10, .3)
-//     expect(total).toBe(13)
-// })
+test('should calculate tip', () => {
+    const total = calcTip(10, .3)
+    expect(total).toBe(13)
+})
 
 // test('should calculate tip with default value', () => {
 //     const total = calcTip(10)
@@ -19,8 +19,8 @@ const { calcTip, fahrenheitToCelsius, celsiusToFahrenheit } = require('../src/ma
 //     expect(answer).toBe(32)
 // })
 
-test('async', (done) => {
-    setTimeout(() => {
-        expect(2).toBe(2)
-    }, 2000);
-})
+// test('async', (done) => {
+//     setTimeout(() => {
+//         expect(2).toBe(2)
+//     }, 2000);
+// })

@@ -34,19 +34,17 @@ test('Should create User', async () => {
         })
         .expect(201)
 
-
-    //to be sure it register in the database
-    expect(response.body.user).not.toBeNull()
-
+    // to be sure it register in the database
+    const user = await User.findById(response.body.user._id)
+    expect(user).not.toBeNull()
     expect(response.body).toMatchObject({
         user: {
             name: 'Darksied',
-            email: 'Darksied95@yahoo.com'
+            email: 'darksied95@yahoo.com'
         },
         token: user.tokens[0].token
     })
-
-    expect(user.password).not.toBe('2-2-dimethyel')
+    expect(response.body.user.password).not.toBe('2-2-dimethyel')
 
 })
 

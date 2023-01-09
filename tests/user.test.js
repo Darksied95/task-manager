@@ -1,28 +1,11 @@
-const mongoose = require('mongoose')
 const request = require('supertest')
-const jwt = require('jsonwebtoken')
 const app = require('../src/app')
-const User = require('../src/Models/user')
+const User = require('../src/Models/user');
+const { userOneID, userOne, setupDatabase } = require('./fixtures/db')
 
 
-const userOneID = new mongoose.Types.ObjectId()
-const userOne = {
-    _id: userOneID,
-    name: 'Raj',
-    email: 'Ali@gmail.com',
-    password: '56po!!!!!!!!!!!!',
-    tokens: [{
-        token: jwt.sign({ _id: userOneID }, process.env.jwtSignature)
-    }]
-}
 
-
-beforeEach(async () => {
-    await User.deleteMany();
-    await new User(userOne).save()
-})
-
-
+beforeEach(setupDatabase)
 
 test('Should create User', async () => {
     const response = await request(app)
@@ -34,7 +17,6 @@ test('Should create User', async () => {
         })
         .expect(201)
 
-    // to be sure it register in the database
     const user = await User.findById(response.body.user._id)
     expect(user).not.toBeNull()
     expect(response.body).toMatchObject({
@@ -94,4 +76,34 @@ test('Should not delete unauthenticated user', async () => {
     await request(app)
         .delete('/users/me')
         .expect(401)
+})
+
+test('Should upload User Avatar', async () => {
+    await request(app)
+        .post('/users/me/avatar')
+        .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+        .attach('upload', 'tests/fixtures/image.jpg')
+        .expect(200)
+    const user = await User.findById(userOneID)
+    expect(user.avatar).toEqual(expect.any(Buffer))
+})
+
+
+test('Should update valid user field', async () => {
+    await request(app)
+        .patch('/users/me')
+        .send({ "name": "Efe" })
+        .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+        .expect(200)
+    const user = await User.findById(userOneID)
+    expect(user.name).toBe('Efe')
+})
+
+test('Should not update invalid user fields', async () => {
+    await request(app)
+        .patch('/users/me')
+        .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+        .send({ location: 'HereOrThere' })
+        .expect(400)
+
 })
